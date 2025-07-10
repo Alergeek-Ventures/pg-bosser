@@ -1,15 +1,31 @@
 {
   "name": "pg-boss-ts",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Type-safe wrapper around pg-boss for PostgreSQL job queues",
+  "keywords": ["pg-boss", "typescript", "job-queue", "postgresql", "background-jobs"],
   "author": "Davasny <davasny@gmail.com>",
   "license": "MIT",
-  "main": "index.js",
+  "main": "./dist/pg-boss-ts.cjs.js",
+  "module": "./dist/pg-boss-ts.es.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/pg-boss-ts.es.js",
+      "require": "./dist/pg-boss-ts.cjs.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit",
     "fmt:staged": "lint-staged --no-stash",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "npm run typecheck && npm run build"
   },
   "devDependencies": {
     "@types/node": "24.0.13",
@@ -17,7 +33,9 @@
     "lint-staged": "16.1.2",
     "prettier": "3.6.2",
     "prettier-plugin-organize-imports": "4.1.0",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "vite": "7.0.4",
+    "vite-plugin-dts": "4.5.4"
   },
   "dependencies": {
     "pg-boss": "10.3.2"
