@@ -1,68 +1,68 @@
-import type PgBoss from "pg-boss";
-import { BossClient } from "./BossClient";
+import PgBoss from "pg-boss";
+
+export type IQueueOptions = Omit<PgBoss.Queue, "name">;
 
 export class Queue<IPayload extends object> {
-  public readonly name: string;
-  private readonly options: PgBoss.Queue | undefined;
+  public readonly queueName: string;
+  private readonly queueOptions: PgBoss.Queue & { deadLetter: string };
 
-  private deadLetterQueue: Queue<IPayload> | null = null;
-  private readonly deadLetterQueueName: string;
-  private readonly isDeadLetter: boolean = false;
+  private readonly pgBossOptions: PgBoss.ConstructorOptions;
+  readonly boss: PgBoss;
 
   constructor({
     name,
     options,
-    isDeadLetter,
+    pgBossOptions,
   }: {
     name: string;
-    options?: PgBoss.Queue;
-    isDeadLetter?: boolean;
+    options?: IQueueOptions;
+    pgBossOptions: PgBoss.ConstructorOptions;
   }) {
-    this.name = name;
+    this.queueName = name;
 
-    let deadLetterQueueName = `${name}-dlq`;
-    if (options && options.deadLetter) {
-      deadLetterQueueName = options.deadLetter;
+    if (!options) {
+      options = {};
     }
 
-    if (isDeadLetter) {
-      this.isDeadLetter = true;
+    if (!options.deadLetter) {
+      options.deadLetter = `${name}-dlq`;
     }
 
-    this.deadLetterQueueName = deadLetterQueueName;
+    this.queueOptions = {
+      ...options,
+      deadLetter: options.deadLetter,
+      name: this.queueName,
+    };
 
-    this.options = options;
+    this.pgBossOptions = pgBossOptions;
+    this.boss = new PgBoss(this.pgBossOptions);
   }
 
   public async getBoss(): Promise<PgBoss> {
-    const boss = await BossClient.getBoss();
+    await this.boss.start();
 
-    const queue = await boss.getQueue(this.name);
+    // create dead letter queue if it does not exist
+    const dlq = await this.boss.getQueue(this.queueOptions.deadLetter);
+    if (!dlq) {
+      await this.boss.createQueue(this.queueOptions.deadLetter);
+    }
+
+    // create queue if it does not exist
+    const queue = await this.boss.getQueue(this.queueName);
     if (!queue) {
-      await boss.createQueue(this.name, this.options);
+      await this.boss.createQueue(this.queueName, this.queueOptions);
     }
 
-    // prevents recurrent creation of dead letter queues
-    if (!this.deadLetterQueue && !this.isDeadLetter) {
-      this.deadLetterQueue = new Queue<IPayload>({
-        name: this.deadLetterQueueName,
-        isDeadLetter: true,
-      });
-
-      // initialize the dead letter queue
-      await this.deadLetterQueue.getBoss();
-    }
-
-    return boss;
+    return this.boss;
   }
 
   public async send(payload: IPayload): Promise<void> {
     const boss = await this.getBoss();
 
     await boss.send({
-      name: this.name,
+      name: this.queueName,
       data: payload,
-      options: this.options,
+      options: this.queueOptions,
     });
   }
 
@@ -73,9 +73,9 @@ export class Queue<IPayload extends object> {
     const boss = await this.getBoss();
 
     await boss.sendDebounced(
-      this.name,
+      this.queueName,
       payload,
-      this.options || {},
+      this.queueOptions || {},
       debounceSeconds,
     );
   }
@@ -83,6 +83,6 @@ export class Queue<IPayload extends object> {
   public async schedule(payload: IPayload, cron: string): Promise<void> {
     const boss = await this.getBoss();
 
-    await boss.schedule(this.name, cron, payload, this.options);
+    await boss.schedule(this.queueName, cron, payload, this.queueOptions);
   }
 }

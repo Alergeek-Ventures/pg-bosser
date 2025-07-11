@@ -5,64 +5,29 @@ queues, workers and jobs.
 
 ## Example usage
 
+### Basic example
+
 ```typescript
-import { Queue } from "./queue";
-import { Worker } from "./worker";
-import { BossClient } from "./boss-client";
-import "dotenv/config";
-
-// queue definition
-const unzipQueue = new Queue<{
+interface IJobPayload {
   filePath: string;
-}>({ name: "unzip-file" });
+}
 
-// worker definition
-const worker = new Worker({
-  queue: unzipQueue,
-  callback: async (job) => {
-    console.log("Processing job:", job.data);
-
-    // sleep for 10s
-    await new Promise((resolve) => setTimeout(resolve, 10_000));
+const unzipQueue = new Queue<IJobPayload>({
+  name: "test-queue",
+  pgBossOptions: {
+    connectionString: "postgres://postgres:postgres@localhost:5433/postgres",
   },
 });
 
-worker.on("error", async (payload) => {
-  console.error("Error", payload.jobDetails);
-});
+const worker = new Worker(unzipQueue, async (job) => {
+  console.log("Processing job:", job.data.filePath);
 
-worker.on("done", async (payload) => {
-  console.log("Job done:", payload.jobDetails);
-});
-
-const gracefulShutdown = async () => {
-  try {
-    const boss = await BossClient.getBoss();
-
-    console.log("Stoping the boss, waiting for the jobs to be finished");
-
-    await boss.stop();
-
-    process.exit(0);
-  } catch (err) {
-    console.error("Error during cleanup", err);
-    process.exit(1);
-  }
-};
-
-process.on("SIGTERM", () => {
-  gracefulShutdown();
-});
-
-process.on("SIGINT", () => {
-  gracefulShutdown();
+  await new Promise((resolve) => setTimeout(resolve, 10_000));
 });
 
 const main = async () => {
-  console.log("Sending job to queue");
   await unzipQueue.send({ filePath: "/tmp/1.zip" });
 
-  // starting the worker
   await worker.work();
 };
 

@@ -19,13 +19,10 @@ export class Worker<IPayload extends object> {
 
   private eventBus: EventEmitter = new EventEmitter();
 
-  constructor({
-    callback,
-    queue,
-  }: {
-    callback: (job: { data: IPayload }) => Promise<void>;
-    queue: Queue<IPayload>;
-  }) {
+  constructor(
+    queue: Queue<IPayload>,
+    callback: (job: { data: IPayload }) => Promise<void>,
+  ) {
     this.callback = callback;
     this.queue = queue;
   }
@@ -33,7 +30,7 @@ export class Worker<IPayload extends object> {
   public async work(): Promise<void> {
     const boss = await this.queue.getBoss();
 
-    await boss.work<IPayload>(this.queue.name, async ([job]) => {
+    await boss.work<IPayload>(this.queue.queueName, async ([job]) => {
       const { data, ...rest } = job;
 
       try {
