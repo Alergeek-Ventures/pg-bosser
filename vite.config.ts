@@ -6,8 +6,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
-      name: "PgBossTs",
-      fileName: (format) => `pg-boss-ts.${format}.js`,
+      name: "PgBosser",
+      fileName: (format) => `pg-bosser.${format}.js`,
       formats: ["es", "cjs"],
     },
     rollupOptions: {

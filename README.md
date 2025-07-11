@@ -1,6 +1,6 @@
-# pg-boss-ts
+# pg-bosser
 
-`pg-boss-ts` is a tiny wrapper over [pg-boss](https://github.com/timgit/pg-boss) heavily inspired
+`pg-bosser` is a tiny wrapper over [pg-boss](https://github.com/timgit/pg-boss) heavily inspired
 by [BullMQ](https://github.com/taskforcesh/bullmq) providing end-to-end type safety for
 queues, workers and jobs.
 

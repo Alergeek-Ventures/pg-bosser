@@ -1,19 +1,19 @@
 {
-  "name": "pg-boss-ts",
+  "name": "pg-bosser",
   "version": "1.0.0",
   "description": "Type-safe wrapper around pg-boss for PostgreSQL job queues",
   "keywords": ["pg-boss", "typescript", "job-queue", "postgresql", "background-jobs"],
   "author": "Davasny <davasny@gmail.com>",
   "license": "MIT",
-  "main": "./dist/pg-boss-ts.cjs.js",
-  "module": "./dist/pg-boss-ts.es.js",
+  "main": "./dist/pg-bosser.cjs.js",
+  "module": "./dist/pg-bosser.es.js",
   "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/pg-boss-ts.es.js",
-      "require": "./dist/pg-boss-ts.cjs.js"
+      "import": "./dist/pg-bosser.es.js",
+      "require": "./dist/pg-bosser.cjs.js"
     }
   },
   "files": [

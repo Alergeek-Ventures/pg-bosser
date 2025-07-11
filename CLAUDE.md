@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-pg-boss-ts is a TypeScript wrapper around [pg-boss](https://github.com/timgit/pg-boss) that provides end-to-end type
+pg-bosser is a TypeScript wrapper around [pg-boss](https://github.com/timgit/pg-boss) that provides end-to-end type
 safety for PostgreSQL-backed job queues. The library consists of three main components that work together:
 
 - **BossClient**: Singleton pattern for managing the pg-boss connection
@@ -104,8 +104,8 @@ The library automatically handles queue creation, DLQ setup, and pg-boss lifecyc
 
 This package is configured as a library using Vite:
 
-- **ESM**: `./dist/pg-boss-ts.es.js`
-- **CJS**: `./dist/pg-boss-ts.cjs.js`
+- **ESM**: `./dist/pg-bosser.es.js`
+- **CJS**: `./dist/pg-bosser.cjs.js`
 - **Types**: `./dist/index.d.ts`
 
 The build outputs both ES modules and CommonJS formats with TypeScript declarations for maximum compatibility. External
@@ -125,16 +125,16 @@ pnpm run build
 
 ```bash
 # In your target project directory
-pnpm add file:../path/to/pg-boss-ts
+pnpm add file:../path/to/pg-bosser
 
 # Or with absolute path
-pnpm add file:/Users/username/path/to/pg-boss-ts
+pnpm add file:/Users/username/path/to/pg-bosser
 ```
 
 ### 3. Use in your project
 
 ```typescript
-import { Queue, Worker, BossClient } from "pg-boss-ts";
+import { Queue, Worker, BossClient } from "pg-bosser";
 
 // Your code here...
 ```
@@ -144,11 +144,11 @@ import { Queue, Worker, BossClient } from "pg-boss-ts";
 When you make changes to the library:
 
 ```bash
-# In pg-boss-ts directory
+# In pg-bosser directory
 pnpm run build
 
 # In your target project directory
-pnpm update pg-boss-ts
+pnpm update pg-bosser
 ```
 
 **Note:** The file protocol creates a symlink to the local package, so you need to rebuild the library (
