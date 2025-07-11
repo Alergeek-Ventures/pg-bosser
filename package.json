@@ -1,6 +1,6 @@
 {
   "name": "pg-bosser",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Type-safe wrapper around pg-boss for PostgreSQL job queues",
   "keywords": ["pg-boss", "typescript", "job-queue", "postgresql", "background-jobs"],
   "author": "Davasny <davasny@gmail.com>",
