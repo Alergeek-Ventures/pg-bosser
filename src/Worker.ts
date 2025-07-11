@@ -2,13 +2,13 @@ import { EventEmitter } from "events";
 import type PgBoss from "pg-boss";
 import type { Queue } from "./Queue";
 
-export type IWorkerEvent = {
+export type IWorkerEvent<IPayload> = {
   error: {
-    jobDetails: Omit<PgBoss.Job, "data">;
+    job: PgBoss.Job<IPayload>;
     error: Error;
   };
   done: {
-    jobDetails: Omit<PgBoss.Job, "data">;
+    job: PgBoss.Job<IPayload>;
   };
 };
 
@@ -30,35 +30,35 @@ export class Worker<IPayload extends object> {
   public async work(): Promise<void> {
     const boss = await this.queue.getBoss();
 
-    await boss.work<IPayload>(this.queue.queueName, async ([job]) => {
-      const { data, ...rest } = job;
+    await boss.work<IPayload>(this.queue.queueName, async (jobs) => {
+      for (const job of jobs) {
+        try {
+          // execute the actual worker task
+          await this.callback(job);
 
-      try {
-        // execute the actual worker task
-        await this.callback(job);
-
-        this.emitEvent("done", { jobDetails: rest });
-      } catch (error) {
-        const { data, ...rest } = job;
-
-        this.emitEvent("error", {
-          error: error as Error,
-          jobDetails: rest,
-        });
+          this.emitEvent("done", { job });
+        } catch (error) {
+          this.emitEvent("error", {
+            error: error as Error,
+            job,
+          });
+        }
       }
     });
   }
 
-  private emitEvent<EventName extends keyof IWorkerEvent>(
+  private emitEvent<EventName extends keyof IWorkerEvent<IPayload>>(
     eventName: EventName,
-    payload: IWorkerEvent[EventName],
+    payload: IWorkerEvent<IPayload>[EventName],
   ) {
     this.eventBus.emit(eventName as string, payload);
   }
 
-  public on<EventName extends keyof IWorkerEvent>(
+  public on<EventName extends keyof IWorkerEvent<IPayload>>(
     eventName: EventName,
-    callback: (payload: IWorkerEvent[EventName]) => Promise<void>,
+    callback: (
+      payload: IWorkerEvent<IPayload>[EventName],
+    ) => Promise<void> | void,
   ) {
     this.eventBus.on(eventName, callback);
   }
