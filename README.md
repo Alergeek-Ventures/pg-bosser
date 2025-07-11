@@ -6,9 +6,23 @@ queues, workers and jobs.
 
 ## Usage
 
+```bash
+npm install pg-bosser
+```
+
+```bash
+yarn add pg-bosser
+```
+
+```bash
+pnpm add pg-bosser
+```
+
 ### Basic example
 
 ```typescript
+import { Queue, Worker } from "pg-bosser";
+
 interface IJobPayload {
   filePath: string;
 }
