@@ -1,9 +1,10 @@
 # pg-boss-ts
 
-`pg-boss-ts` is a tiny wrapper over [pg-boss](https://github.com/timgit/pg-boss) providing end-to-end type safety for
+`pg-boss-ts` is a tiny wrapper over [pg-boss](https://github.com/timgit/pg-boss) heavily inspired
+by [BullMQ](https://github.com/taskforcesh/bullmq) providing end-to-end type safety for
 queues, workers and jobs.
 
-## Example usage
+## Usage
 
 ### Basic example
 
@@ -13,9 +14,9 @@ interface IJobPayload {
 }
 
 const unzipQueue = new Queue<IJobPayload>({
-  name: "test-queue",
+  name: "unzip-queue",
   pgBossOptions: {
-    connectionString: "postgres://postgres:postgres@localhost:5433/postgres",
+    connectionString: "postgres://postgres:postgres@localhost:5432/postgres",
   },
 });
 
@@ -32,6 +33,39 @@ const main = async () => {
 };
 
 main();
+```
+
+The same queue using BullMQ:
+
+```typescript
+import { Queue, Worker } from "bullmq";
+
+interface IJobPayload {
+  filePath: string;
+}
+
+// Create a new connection in every instance
+const unzipQueue = new Queue<IJobPayload>("unzip-queue", {
+  connection: {
+    host: "redis",
+    port: 6379,
+  },
+});
+
+const myWorker = new Worker<IJobPayload>(
+  "unzip-queue",
+  async (job) => {
+    console.log("Processing job:", job.data.filePath);
+
+    await new Promise((resolve) => setTimeout(resolve, 10_000));
+  },
+  {
+    connection: {
+      host: "redis",
+      port: 6379,
+    },
+  },
+);
 ```
 
 ## Development
