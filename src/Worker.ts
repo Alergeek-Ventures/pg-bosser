@@ -10,6 +10,7 @@ export type IWorkerEvent<IPayload> = {
   done: {
     job: PgBoss.Job<IPayload>;
   };
+  ready: {};
 };
 
 export class Worker<IPayload extends object> {
@@ -21,7 +22,7 @@ export class Worker<IPayload extends object> {
 
   constructor(
     queue: Queue<IPayload>,
-    callback: (job: { data: IPayload }) => Promise<void>,
+    callback: (job: PgBoss.Job<IPayload>) => Promise<void>,
   ) {
     this.callback = callback;
     this.queue = queue;
@@ -29,6 +30,8 @@ export class Worker<IPayload extends object> {
 
   public async work(): Promise<void> {
     const boss = await this.queue.getBoss();
+
+    this.emitEvent("ready", {});
 
     await boss.work<IPayload>(this.queue.queueName, async (jobs) => {
       for (const job of jobs) {
