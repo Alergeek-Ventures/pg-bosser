@@ -1,6 +1,6 @@
 {
   "name": "pg-bosser",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Type-safe wrapper around pg-boss for PostgreSQL job queues",
   "keywords": [
     "pg-boss",
