@@ -11,19 +11,22 @@ export type IWorkerEvent<IPayload> = {
     job: PgBoss.Job<IPayload>;
   };
   ready: {};
+  stop: {};
 };
 
+export type IWorkerCallback<IPayload> = (
+  job: PgBoss.Job<IPayload>,
+  eventBus: EventEmitter,
+) => Promise<void> | void;
+
 export class Worker<IPayload extends object> {
-  private readonly callback: (job: PgBoss.Job<IPayload>) => Promise<void>;
+  private readonly callback: IWorkerCallback<IPayload>;
 
   private readonly queue: Queue<IPayload>;
 
   private eventBus: EventEmitter = new EventEmitter();
 
-  constructor(
-    queue: Queue<IPayload>,
-    callback: (job: PgBoss.Job<IPayload>) => Promise<void>,
-  ) {
+  constructor(queue: Queue<IPayload>, callback: IWorkerCallback<IPayload>) {
     this.callback = callback;
     this.queue = queue;
   }
@@ -37,7 +40,7 @@ export class Worker<IPayload extends object> {
       for (const job of jobs) {
         try {
           // execute the actual worker task
-          await this.callback(job);
+          await this.callback(job, this.eventBus);
 
           this.emitEvent("done", { job });
         } catch (error) {
@@ -64,5 +67,10 @@ export class Worker<IPayload extends object> {
     ) => Promise<void> | void,
   ) {
     this.eventBus.on(eventName, callback);
+  }
+
+  public stop(): void {
+    this.queue.boss.stop();
+    this.emitEvent("stop", {});
   }
 }

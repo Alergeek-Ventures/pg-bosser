@@ -80,7 +80,7 @@ export class Queue<IPayload extends object> {
     );
   }
 
-  public async schedule(payload: IPayload, cron: string): Promise<void> {
+  public async schedule(cron: string, payload: IPayload): Promise<void> {
     const boss = await this.getBoss();
 
     await boss.schedule(this.queueName, cron, payload, this.queueOptions);
