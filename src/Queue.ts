@@ -56,33 +56,47 @@ export class Queue<IPayload extends object> {
     return this.boss;
   }
 
-  public async send(payload: IPayload): Promise<void> {
+  public async send(
+    payload: IPayload,
+    options?: PgBoss.SendOptions,
+  ): Promise<void> {
     const boss = await this.getBoss();
 
     await boss.send({
       name: this.queueName,
       data: payload,
-      options: this.queueOptions,
+      options: {
+        ...this.queueOptions,
+        ...options,
+      },
     });
   }
 
   public async sendDebounced(
     payload: IPayload,
     debounceSeconds: number,
+    options?: PgBoss.SendOptions,
   ): Promise<void> {
     const boss = await this.getBoss();
 
     await boss.sendDebounced(
       this.queueName,
       payload,
-      this.queueOptions || {},
+      { ...this.queueOptions, ...options },
       debounceSeconds,
     );
   }
 
-  public async schedule(cron: string, payload: IPayload): Promise<void> {
+  public async schedule(
+    cron: string,
+    payload: IPayload,
+    options?: PgBoss.SendOptions,
+  ): Promise<void> {
     const boss = await this.getBoss();
 
-    await boss.schedule(this.queueName, cron, payload, this.queueOptions);
+    await boss.schedule(this.queueName, cron, payload, {
+      ...this.queueOptions,
+      ...options,
+    });
   }
 }
