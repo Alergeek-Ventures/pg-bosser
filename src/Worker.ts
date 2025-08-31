@@ -48,6 +48,8 @@ export class Worker<IPayload extends object> {
             error: error as Error,
             job,
           });
+
+          throw error;
         }
       }
     });
